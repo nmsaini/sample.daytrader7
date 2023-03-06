@@ -10,3 +10,5 @@ COPY --from=build --chown=1001:0 /app/daytrader-ee7/target/*.ear /config/apps
 COPY --from=build --chown=1001:0 /app/daytrader-ee7/target/liberty/wlp/usr/shared/resources/DerbyLibs/derby-10.14.2.0.jar /opt/ol/wlp/usr/shared/resources/DerbyLibs/derby-10.14.2.0.jar
 COPY --from=build --chown=1001:0 /app/daytrader-ee7/target/liberty/wlp/usr/shared/resources/data /opt/ol/wlp/usr/shared/resources/data
 RUN configure.sh
+
+EXPOSE 9082
