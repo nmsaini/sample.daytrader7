@@ -1,4 +1,4 @@
-FROM icr.io/appcafe/open-liberty:kernel-slim-java8-ibmjava-ubi AS build
+FROM icr.io/appcafe/open-liberty:kernel-slim-java8-openj9-ubi AS build
 USER 0
 RUN dnf install maven -y
 USER 1001
@@ -6,7 +6,7 @@ COPY --chown=1001:0 . /app/
 WORKDIR /app/
 RUN mvn -Dmaven.repo.local=/tmp clean package
 
-FROM icr.io/appcafe/open-liberty:kernel-slim-java8-ibmjava-ubi
+FROM icr.io/appcafe/open-liberty:kernel-slim-java8-openj9-ubi
 COPY --chown=1001:0 daytrader-ee7/src/main/liberty/config/server.xml /config/server.xml
 RUN features.sh
 COPY --from=build --chown=1001:0 /app/daytrader-ee7/target/*.ear /config/apps
