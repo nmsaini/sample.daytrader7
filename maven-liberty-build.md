@@ -18,4 +18,4 @@ podman build -t dt7 -f maven-using-liberty.dockerfile .
 podman run -it --rm -p 9082:9082 dt7
 ```
 
-4. Open browser http://hostname:9082/daytrader
+4. Open browser http://localhost:9082/daytrader
