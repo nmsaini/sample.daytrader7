@@ -4,7 +4,7 @@ To build this project inside a Maven container rather than installing Maven, I e
 # Steps
 1. clone the repo 
 ```
-git clone https://https://github.com/nmsaini/sample.daytrader7 
+git clone https://github.com/nmsaini/sample.daytrader7 
 ```
 
 2. build datatrader app as a container image
