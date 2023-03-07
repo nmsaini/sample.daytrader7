@@ -6,6 +6,7 @@ To build this project inside a Maven container rather than installing Maven, I e
 
 2. build datatrader app as a container image
 ```
+cd sample.daytrader7
 podman build -t dt7 -f maven-build.dockerfile .
 ```
 
