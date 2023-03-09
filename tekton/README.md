@@ -10,3 +10,6 @@
 `oc apply -f https://raw.githubusercontent.com/nmsaini/sample.daytrader7/master/tekton/pipeline.yaml`
 
 # 5. start the pipeline
+
+# 6. launch in browser
+`echo http://$(oc get routes daytrader7app -o jsonpath='{.spec.host}{"\n"}')/daytrader`
