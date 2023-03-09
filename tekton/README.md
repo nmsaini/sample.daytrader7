@@ -17,7 +17,7 @@ tkn pipeline start daytrader-build-deploy-pipeline \
 	--param dockerfile-name=maven-using-liberty.dockerfile \
 	--param image-name=daytrader7app \
 	--param image-port=9080 \
-  --workspace name=workspace,claimName=daytrader-build-pvc
+  	--workspace name=workspace,claimName=daytrader-build-pvc
 ```
 
 # 6. launch in browser
