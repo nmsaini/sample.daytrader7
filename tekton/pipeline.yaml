@@ -108,7 +108,7 @@ spec:
             #!/bin/bash
 
 
-            RC="$(oc get deployment $(params.image-name) > /dev/null 2>&1;echo
+            RC="$(oc get routes $(params.image-name) > /dev/null 2>&1;echo
             $?)";
 
 
