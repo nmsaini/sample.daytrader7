@@ -1,0 +1,126 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: daytrader-build-deploy-pipeline
+spec:
+  params:
+    - default: 'https://github.com/nmsaini/sample.daytrader7.git'
+      name: git-url
+      type: string
+    - default: maven-using-liberty.dockerfile
+      name: dockerfile-name
+      type: string
+    - default: daytrader7app
+      name: image-name
+      type: string
+    - default: liberty
+      name: image-ns
+      type: string
+    - default: '9082'
+      name: image-port
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: sslVerify
+          value: 'true'
+        - name: crtFileName
+          value: ca-bundle.crt
+        - name: deleteExisting
+          value: 'true'
+        - name: verbose
+          value: 'true'
+        - name: gitInitImage
+          value: >-
+            registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:a538c423e7a11aae6ae582a411fdb090936458075f99af4ce5add038bb6983e8
+        - name: userHome
+          value: /tekton/home
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: workspace
+    - name: build-image
+      params:
+        - name: IMAGE
+          value: >-
+            image-registry.openshift-image-registry.svc:5000/$(params.image-ns)/$(params.image-name)
+        - name: BUILDER_IMAGE
+          value: >-
+            registry.redhat.io/rhel8/buildah@sha256:0a86ecbdfbe86e9d225b7fe4b090a0dd6d323f8afdfdf2bd933ff223ddb53320
+        - name: STORAGE_DRIVER
+          value: vfs
+        - name: DOCKERFILE
+          value: ./$(params.dockerfile-name)
+        - name: CONTEXT
+          value: .
+        - name: TLSVERIFY
+          value: 'true'
+        - name: FORMAT
+          value: oci
+        - name: SKIP_PUSH
+          value: 'false'
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      workspaces:
+        - name: source
+          workspace: workspace
+    - name: deploy-app
+      params:
+        - name: SCRIPT
+          value: >
+            #!/bin/bash
+
+
+            RC="$(oc get deployment $(params.image-name) > /dev/null 2>&1;echo
+            $?)";
+
+
+            if [ $RC -eq 0 ]; then
+                oc rollout restart deployment $(params.image-name)
+            else
+              oc new-app --name $(params.image-name) $(params.image-name)
+            fi
+        - name: VERSION
+          value: latest
+      runAfter:
+        - build-image
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      workspaces:
+        - name: manifest-dir
+          workspace: workspace
+    - name: expose-route
+      params:
+        - name: SCRIPT
+          value: >-
+            #!/bin/bash
+
+
+            RC="$(oc get deployment $(params.image-name) > /dev/null 2>&1;echo
+            $?)";
+
+
+            if [ $RC -ne 0 ]; then
+              oc expose svc $(params.image-name) --port=$(params.image-port)
+            fi
+        - name: VERSION
+          value: latest
+      runAfter:
+        - deploy-app
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+  workspaces:
+    - name: workspace
