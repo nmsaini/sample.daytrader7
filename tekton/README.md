@@ -21,7 +21,13 @@ oc apply -f https://raw.githubusercontent.com/nmsaini/sample.daytrader7/master/t
 oc apply -f https://raw.githubusercontent.com/nmsaini/sample.daytrader7/master/tekton/pipeline.yaml
 ```
 
-### 6. start the pipeline
+### 6. Create a ServiceAccount and assign anyuid SCC as derby database needs to run under a specific user
+```
+oc create serviceaccount daytrader7app-sa
+oc adm policy add-scc-to-user anyuid -z daytrader7app-sa
+```
+
+### 7. start the pipeline
 ```
 tkn pipeline start daytrader-build-deploy-pipeline \
 	--param image-ns=$(oc project -q) \
@@ -32,7 +38,12 @@ tkn pipeline start daytrader-build-deploy-pipeline \
   	--workspace name=workspace,claimName=daytrader-build-pvc
 ```
 
-### 7. launch in browser
+### 8. Apply service account to the deployment that was created in step 6.
+```
+oc set serviceaccount deployment/daytrader7app daytrader7app-sa
+```
+
+### 9. launch in browser
 ```
 echo http://$(oc get routes daytrader7app -o jsonpath='{.spec.host}{"\n"}')/daytrader
 ```
